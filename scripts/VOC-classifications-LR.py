@@ -49,25 +49,25 @@ for layer in layers:
     #feature_pipe = Pipeline([('ANN', SkiCaffe(caffe_root = caffe_root,model_prototxt_path = model_prototxt, model_trained_path = model_trained, layer_name = layer))])
     feature_pipe = Pipeline([('ANN', SkiCaffe(caffe_root = caffe_root,model_prototxt_path = model_prototxt, model_trained_path = model_trained, layer_name = layer)),
                             ('pca', RandomizedPCA(n_components=1000, whiten = True))])
-    feaures = feature_pipe.fit_transform(X_train[:500])
+    feaures = feature_pipe.fit_transform(X_train)
     print '********************************************************************'
     print 'feaures shape is', feaures.shape
     print 'classifying', layer
     print '********************************************************************'
 
-    svc_pipe = Pipeline([('OVCsvc', OneVsRestClassifier(SVC(random_state = 1, kernel = 'linear')))])
+    lr_pipe = Pipeline([('OVClr', OneVsRestClassifier(LogisticRegression()))])
     param_range = [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]
-    param_grid = [{'OVCsvc__estimator__C': param_range}]
-    gs = GridSearchCV(estimator = svc_pipe, param_grid = param_grid, scoring = 'average_precision', cv = 3, n_jobs=-1)
-    gs.fit(feaures, array(y_train[:500]))
+    param_grid = [{'OVClr__estimator__C': param_range}]
+    gs = GridSearchCV(estimator = lr_pipe, param_grid = param_grid, scoring = 'average_precision', cv = 5, n_jobs=-1)
+    gs.fit(feaures, array(y_train))
     layer_names.append(layer)
     best_params.append(gs.best_params_)
     best_scores.append(gs.best_score_)
     temp_df = pd.DataFrame({'layer.name': layer_names, 'best_scores': best_scores, 'best_params': best_params})
-    temp_df.to_pickle("../results/VOC-SVM" + layer + ".pkl")
+    temp_df.to_pickle("../results/VOC-LR" + layer + ".pkl")
 
 
 results_df = pd.DataFrame({'layer.name': layers, 'best_scores': best_scores, 'best_params': best_params})
 results_df.head()
 
-results_df.to_pickle("../results/VOC-SVM.pkl")
+results_df.to_pickle("../results/VOC-LR.pkl")
