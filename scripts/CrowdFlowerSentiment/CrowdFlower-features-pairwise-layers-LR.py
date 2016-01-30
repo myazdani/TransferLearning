@@ -6,7 +6,7 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.svm import SVC
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LogisticRegression, SGDClassifier
-from sklearn.preprocessing import MultiLabelBinarizer, label_binarize, LabelEncoder
+from sklearn.preprocessing import MultiLabelBinarizer, label_binarize, LabelEncoder, StandardScaler
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.externals import joblib
 from sklearn.decomposition import RandomizedPCA
@@ -46,7 +46,7 @@ for df_pair in itertools.combinations(data_frames, 2):
     print 'feaures shape is', X_train.shape
     print 'classifying', layer_pair
     print '********************************************************************'
-    lr_pipe = Pipeline([('lr', LogisticRegression(solver = 'lbfgs', multi_class = "multinomial", max_iter=5000))])
+    lr_pipe = Pipeline([('scaling', StandardScaler()), ('lr', LogisticRegression(solver = 'lbfgs', multi_class = "multinomial", max_iter=5000))])
     param_range = [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]
     param_grid = [{'lr__C': param_range}]
     gs = GridSearchCV(estimator = lr_pipe, param_grid = param_grid, scoring = 'accuracy', cv = 5, n_jobs=-1, pre_dispatch='3*n_jobs')
@@ -55,7 +55,7 @@ for df_pair in itertools.combinations(data_frames, 2):
     best_params.append(gs.best_params_)
     best_scores.append(gs.best_score_)
     temp_df = pd.DataFrame({'layer.name': layer_names, 'best_scores': best_scores, 'best_params': best_params})
-    temp_df.to_pickle("../../results/CrowdFlower-LR" + layer_1 + "_" + layer_2 + ".pkl")
+    temp_df.to_pickle("../../results/CrowdFlower-LR-scaled-" + layer_1 + "_" + layer_2 + ".pkl")
     gc.collect()
 
 
@@ -65,4 +65,4 @@ print '*************************************************'
 results_df = pd.DataFrame({'layer.name': layer_names, 'best_scores': best_scores, 'best_params': best_params})
 results_df.head()
 
-results_df.to_pickle("../../results/CrowdFlower-LR-layer-pairs.pkl")
+results_df.to_pickle("../../results/CrowdFlower-LR-layer-pairs-scaled.pkl")
