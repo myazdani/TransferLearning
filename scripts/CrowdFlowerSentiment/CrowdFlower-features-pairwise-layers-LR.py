@@ -20,7 +20,7 @@ data_frames = []
 for root, dirs, files in os.walk(src_path):
     data_frames.extend([os.path.join(root, f) for f in files if f.endswith(file_type)])
 
-
+data_frames =[src_path+"prob_features.pkl", src_path+"fc8_features.pkl", src_path+"fc7_features.pkl", src_path+"fc6_features.pkl"]
 
 best_params = []
 best_scores = []
@@ -49,7 +49,7 @@ for df_pair in itertools.combinations(data_frames, 2):
     lr_pipe = Pipeline([('lr', LogisticRegression(solver = 'lbfgs', multi_class = "multinomial", max_iter=5000))])
     param_range = [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]
     param_grid = [{'lr__C': param_range}]
-    gs = GridSearchCV(estimator = lr_pipe, param_grid = param_grid, scoring = 'log_loss', cv = 5, n_jobs=-1, pre_dispatch='3*n_jobs')
+    gs = GridSearchCV(estimator = lr_pipe, param_grid = param_grid, scoring = 'accuracy', cv = 5, n_jobs=-1, pre_dispatch='3*n_jobs')
     gs.fit(X_train, LabelEncoder().fit_transform(y_train))
     layer_names.append(layer_pair)
     best_params.append(gs.best_params_)
